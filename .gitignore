@@ -1,0 +1,9 @@
+*.js
+*.js.map
+.vscode/
+.idea/
+.env
+.env.local
+.env.*.local
+/node_modules
+/build
