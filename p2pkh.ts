@@ -7,11 +7,12 @@ import "dotenv/config.js";
 const alicePriKey = process.env.ALICE_PRIVATE_KEY || "";
 const bobPriKey = process.env.BOB_PRIVATE_KEY || "";
 
+
 // keypairs generation
 const ECPair = ECPairFactory(ecc);
 const network = bitcoin.networks.testnet;
 
-// ms2qJFTv3vNom4rPXx3okbZqnvmRuGpnSV(P2PKH)
+// mt7GVM7AAhPFsovEyfyhEy97oFiynDoZbr(P2PKH)
 const alice = ECPair.fromWIF(alicePriKey, network);
 
 const changePubkeyHash = bitcoin.crypto.hash160(alice.publicKey);
@@ -21,9 +22,9 @@ const changeAddress =
   bitcoin.payments.p2pkh({
     hash: bitcoin.crypto.hash160(changePubkeyHash),
     network,
-  }).address || "ms2qJFTv3vNom4rPXx3okbZqnvmRuGpnSV";
+  }).address!;
 
-//  mxSVk5XH7hHZzcczQecprzBDss6Ksx3pzT(P2PKH)
+//  mkmYsvm3tU1meB8nR2z7Hwd3FyEAR2FTNU(P2PKH)
 const bob = ECPair.fromWIF(
   bobPriKey,
   network
@@ -35,7 +36,7 @@ const escrowAddress =
   bitcoin.payments.p2pkh({
     hash: escrowPubkeyHash,
     network,
-  }).address || "mxSVk5XH7hHZzcczQecprzBDss6Ksx3pzT";
+  }).address!;
 
 // Prepare custom script
 const eosAccount = "miner.enf";

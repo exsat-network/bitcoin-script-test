@@ -8,10 +8,12 @@
     "bitcoinjs-lib": "^6.1.5",
     "dotenv": "^16.4.5",
     "ecpair": "^2.1.0",
-    "tiny-secp256k1": "^2.2.3"
+    "tiny-secp256k1": "^2.2.3",
+    "varuint-bitcoin": "^1.1.2"
   },
   "scripts": {
     "p2wsh": "npx tsc p2wsh.ts --outDir build && node ./build/p2wsh.js",
-    "p2pkh": "npx tsc p2pkh.ts --outDir build && node ./build/p2pkh.js"
+    "p2pkh": "npx tsc p2pkh.ts --outDir build && node ./build/p2pkh.js",
+    "p2wsh_redeem": "npx tsc p2wsh_redeem.ts --outDir build && node ./build/p2wsh_redeem.js"
   }
 }
