@@ -48,7 +48,7 @@ const customScript = bitcoin.script.compile([
   bitcoin.opcodes.OP_DROP,
   bitcoin.opcodes.OP_DUP,
   bitcoin.opcodes.OP_HASH160,
-  escrowPubkeyHash,
+  escrowPubkeyHash, 
   bitcoin.opcodes.OP_EQUAL,
   bitcoin.opcodes.OP_CHECKSIG,
 ]);

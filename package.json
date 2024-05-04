@@ -4,16 +4,20 @@
     "typescript": "^5.4.5"
   },
   "dependencies": {
+    "@okxweb3/coin-bitcoin": "^1.0.17",
     "axios": "^1.6.8",
     "bitcoinjs-lib": "^6.1.5",
     "dotenv": "^16.4.5",
     "ecpair": "^2.1.0",
+    "long": "^5.2.0",
+    "safe-buffer": "^5.1.1",
     "tiny-secp256k1": "^2.2.3",
     "varuint-bitcoin": "^1.1.2"
   },
   "scripts": {
     "p2wsh": "npx tsc p2wsh.ts --outDir build && node ./build/p2wsh.js",
     "p2pkh": "npx tsc p2pkh.ts --outDir build && node ./build/p2pkh.js",
-    "p2wsh_redeem": "npx tsc p2wsh_redeem.ts --outDir build && node ./build/p2wsh_redeem.js"
+    "p2wsh_redeem": "npx tsc p2wsh_redeem.ts --outDir build && node ./build/p2wsh_redeem.js",
+    "inscribe": "npx tsc inscribe.ts --outDir build && node ./build/inscribe.js"
   }
 }
