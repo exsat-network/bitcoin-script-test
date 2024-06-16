@@ -21,13 +21,6 @@ const alice1 = ECPair.fromWIF(alice1PriKey, network);
 const alice2 = ECPair.fromWIF(alice2PriKey, network);
 const alice3 = ECPair.fromWIF(alice3PriKey, network);
 
-// Show the conversion process from pubkey to address
-// const changeAddress =
-//   bitcoin.payments.p2wpkh({
-//     hash: bitcoin.crypto.hash160(alice1.publicKey),
-//     network,
-//   }).address || "bcrt1qcqanpfgsgrjpz64dxa4zt0euaxuwyquajgkhj9";
-
 //  mkmYsvm3tU1meB8nR2z7Hwd3FyEAR2FTNU(P2PKH)
 const bob = ECPair.fromWIF(bobPriKey, network);
 
@@ -37,87 +30,57 @@ const bobAddress =
         network,
     }).address || "bcrt1qj4fz4ntltsjze6zhsxqy2k2xn7cj077xjmfj0n";
 
-// console.log(
-//   `alice: ${changeAddress} matches: ${
-//     changeAddress === "bcrt1qcqanpfgsgrjpz64dxa4zt0euaxuwyquajgkhj9"
-//   }`
-// );
 console.log(`bob: ${bobAddress} matches: ${bobAddress === "bcrt1qj4fz4ntltsjze6zhsxqy2k2xn7cj077xjmfj0n"}`);
-
-
-//<depositor> DROP
-// <blindingFactor> DROP
-// DUP HASH160 <walletPubKeyHash> EQUAL
-// IF
-//   CHECKSIG
-// ELSE
-//   DUP HASH160 <refundPubkeyHash> EQUALVERIFY
-//   <refundLocktime> CHECKLOCKTIMEVERIFY DROP
-//   CHECKSIG
-// ENDIF
-
-
-//<depositor> DROP
-// <blindingFactor> DROP
-// 2 <pubkey1> <pubkey2> <pubkey3> 3
-// IF
-//   CHECKMULTISIG
-// ELSE
-//   DUP HASH160 <refundPubkeyHash> EQUALVERIFY
-//   <refundLocktime> CHECKLOCKTIMEVERIFY DROP
-//   CHECKSIG
-// ENDIF
-
 
 // Prepare custom script
 const eosAccount = "miner.enf";
 const locktime = 1718374380;
 
 const lockScript = bitcoin.script.compile([
-    Buffer.from(eosAccount, "utf8"),
-    bitcoin.opcodes.OP_DROP,
     bitcoin.opcodes.OP_2, alice1.publicKey, alice2.publicKey, alice3.publicKey, bitcoin.opcodes.OP_3,
-    bitcoin.opcodes.OP_IF,
-    bitcoin.opcodes.OP_CHECKMULTISIG,
-    bitcoin.opcodes.OP_ELSE,
-    bitcoin.opcodes.OP_DUP, bitcoin.crypto.hash160(bob.publicKey), bitcoin.opcodes.OP_EQUALVERIFY,
-    bitcoin.script.number.encode(locktime), bitcoin.opcodes.OP_CHECKLOCKTIMEVERIFY, bitcoin.opcodes.OP_DROP,
-    bitcoin.opcodes.OP_CHECKSIG,
-    bitcoin.opcodes.OP_ENDIF
-
+    bitcoin.opcodes.OP_CHECKMULTISIG
 ]);
 
+const pubkeys = [alice1.publicKey, alice2.publicKey, alice3.publicKey]
+for (let pubkey of pubkeys) {
+    console.log(`pubkey=${pubkey.toString('hex')}`)
+}
+
 //Create P2SH address
-const escrowP2WSH = bitcoin.payments.p2wsh({
-    redeem: {output: lockScript, network},
-    network,
+const escrowP2WSH = bitcoin.payments.p2sh({
+    redeem: bitcoin.payments.p2ms({
+        pubkeys,
+        m: 2,
+        network,
+    }), network
 });
 
 
 // Set inputs and outputs for transactions
 const psbt = new bitcoin.Psbt({network});
 
-//  http://regtest.exactsat.io/api/v2/utxo/all?address=bcrt1q4hv28ezafayhuak7ms9qcgx0l67guyqh5fgjmxhws07ypxpgnc3q0wt2pw
+//  http://regtest.exactsat.io/api/v2/utxo/all?address=2Mv687Znv1Di4afGzbLWSCCjzADn5jC6ZzF
 // {
-//       "txid": "f48eb799245c6aa237b21fd76dd77daad79647db19912441fac2dd582a25c639",
+//       "txid": "5ad519b62c156114218cc4ebd48d6e7e49c20a781256abe13e3a9be809322a43",
 //       "vout": 0,
-//       "height": 0,
+//       "height": 39952,
 //       "value": 2000000,
 //       "atomicals": [],
 //       "ordinals": [],
 //       "runes": [],
-//       "address": "bcrt1q4hv28ezafayhuak7ms9qcgx0l67guyqh5fgjmxhws07ypxpgnc3q0wt2pw",
+//       "address": "bcrt1q89fqtuntlqe5k45lznjps56xqflhgr8xawfq7galzemvlcje43vsdfkyuj",
 //       "spent": false,
-//       "output": "f48eb799245c6aa237b21fd76dd77daad79647db19912441fac2dd582a25c639:0"
+//       "output": "5ad519b62c156114218cc4ebd48d6e7e49c20a781256abe13e3a9be809322a43:0"
 //     }
 psbt.addInput({
-    hash: "f48eb799245c6aa237b21fd76dd77daad79647db19912441fac2dd582a25c639",
+    hash: "5ad519b62c156114218cc4ebd48d6e7e49c20a781256abe13e3a9be809322a43",
     index: 0, // UTXO output index vout
-    witnessUtxo: {
-        script: escrowP2WSH.output!,
-        value: 2000000,
-    },
-    witnessScript: lockScript,
+    //http://mempool.regtest.exactsat.io/api/tx/6a2346e656aa69468cee7a9d8e07f0ed47470d5e3f37a855755b89954e0cd78d/hex
+    nonWitnessUtxo: Buffer.from(
+        "0200000002432a3209e89b3a3ee1ab5612780ac2497e6e8dd4ebc48c211461152cb619d55a010000006a47304402206ae6f27ebab1dd476ef0d51617076df4ba6d8dfa94e894542d4634feb0b4819a02204b7c3f1d31997f676f680f00899533867751a9bd8b270a1450ada2bb69998aa70121024121544f121f4cbf91766ea72012e35838167aaeb9d10451930516dedfa3431fffffffffa1b0cecc339c595ce00c515ee7a12c2778bd74761c7c3fada5ea9bd6472ab7d1000000006a4730440220712df12e9271a9cc0709bce3ad6429fcb0faef3b819d8db3c1956357c52b01670220306ad4e8b4ade7474de9dd9fd1d666afc7a2bfbdbe55a4cebb98648cfcd9a4b80121024121544f121f4cbf91766ea72012e35838167aaeb9d10451930516dedfa3431fffffffff0280841e000000000017a9141f2fbade685d0d1d340f9e27a23d10e998a43c1087dad6f505000000001976a91488d3ccf1e8b7152227522865e215f686f4f0541b88ac00000000",
+        "hex"
+    ),
+    redeemScript: lockScript
 });
 
 
@@ -127,8 +90,8 @@ const sendAmount = 200000;
 
 
 const escrowP2WSHAddress = escrowP2WSH.address || "";
-//bcrt1q4hv28ezafayhuak7ms9qcgx0l67guyqh5fgjmxhws07ypxpgnc3q0wt2pw
-console.log(`multisig: ${escrowP2WSHAddress} matches: ${escrowP2WSHAddress === "bcrt1q4hv28ezafayhuak7ms9qcgx0l67guyqh5fgjmxhws07ypxpgnc3q0wt2pw"}`);
+//bcrt1q89fqtuntlqe5k45lznjps56xqflhgr8xawfq7galzemvlcje43vsdfkyuj
+console.log(`multisig: ${escrowP2WSHAddress} matches: ${escrowP2WSHAddress === "bcrt1q89fqtuntlqe5k45lznjps56xqflhgr8xawfq7galzemvlcje43vsdfkyuj"}`);
 const changeAddress = escrowP2WSHAddress
 console.log(`changeAddress: ${changeAddress}`)
 // Add output
@@ -149,7 +112,7 @@ psbt.addOutput({
 // Sign transaction
 psbt.signInput(0, alice1);
 psbt.signInput(0, alice2);
-psbt.signInput(0, alice3);
+// psbt.signInput(0, alice3);
 
 const validateSigFunction = (pubkey: Buffer, msghash: Buffer, signature: Buffer) => {
     const verified = ecc.verify(msghash, pubkey, signature);
@@ -157,11 +120,8 @@ const validateSigFunction = (pubkey: Buffer, msghash: Buffer, signature: Buffer)
     return verified
 };
 
-
-
-
 const finalizeInput = (_inputIndex: number, input: any) => {
-    const redeemPayment = bitcoin.payments.p2wsh({
+    const redeemPayment = bitcoin.payments.p2sh({
         redeem: {
             input: bitcoin.script.compile([
                 //redeem scripts
@@ -182,8 +142,8 @@ const finalizeInput = (_inputIndex: number, input: any) => {
     };
 };
 
-if (psbt.validateSignaturesOfInput(0, validateSigFunction, alice1.publicKey) && psbt.validateSignaturesOfInput(0, validateSigFunction, alice2.publicKey) && psbt.validateSignaturesOfInput(0, validateSigFunction, alice3.publicKey)) {
-    psbt.finalizeInput(0, finalizeInput);
+if (psbt.validateSignaturesOfInput(0, validateSigFunction, alice1.publicKey) && psbt.validateSignaturesOfInput(0, validateSigFunction, alice2.publicKey)) {
+    psbt.finalizeInput(0);
     const txHex = psbt.extractTransaction().toHex();
     console.log(`Transaction Hex: ${txHex}`);
 } else {

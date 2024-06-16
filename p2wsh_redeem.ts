@@ -7,13 +7,13 @@ import { witnessStackToScriptWitness } from "./utils/witness_stack_to_script_wit
 
 
 // load environment variables
-const alicePriKey = process.env.ALICE_PRIVATE_KEY || "";
+const alicePriKey = process.env.ALICE1_PRIVATE_KEY || "";
 const bobPriKey = process.env.BOB_PRIVATE_KEY || "";
 
 
 // keypairs generation
 const ECPair = ECPairFactory(ecc);
-const network = bitcoin.networks.testnet;
+const network = bitcoin.networks.regtest;
 
 // mt7GVM7AAhPFsovEyfyhEy97oFiynDoZbr(P2PKH)
 const alice = ECPair.fromWIF(alicePriKey, network);
@@ -61,7 +61,7 @@ const changeAddress =
 console.log(
   `changeAddress: ${changeAddress} matches: ${
     changeAddress ===
-    "tb1q69ajlcza24nqf0atqu635r8jfyg0slm0j6e3r6s08wn6nys9pyjsgvlqju"
+    "bcrt1qe36qxhv39xc573x2zndgzm4ladfr20mrx6j99rv646q3zrygz6gswkg9x3"
   }
   `
 );
@@ -76,32 +76,32 @@ const psbt = new bitcoin.Psbt({network});
   //  https://blockstream.info/testnet/api/address/tb1q69ajlcza24nqf0atqu635r8jfyg0slm0j6e3r6s08wn6nys9pyjsgvlqju/utxo
   // [
   //   {
-  //     txid: "0060ffe6fae2834336d6d023944d82b1c5a7686ab62907e1447255f181514668",
-  //     vout: 0,
-  //     status: {
-  //       confirmed: true,
-  //       block_height: 2809961,
-  //       block_hash:
-  //         "00000000000000e96055fcdd61472bbaf025be1c554bedfeb2dde6afe40befbb",
-  //       block_time: 1714541826,
-  //     },
-  //     value: 5000,
-  //   },
+//       "txid": "b372db861597086ebe2c8555d4299e71d21e3fc867fb4cb34b84ff341a05d50b",
+//       "vout": 0,
+//       "height": 0,
+//       "value": 2000000,
+//       "atomicals": [],
+//       "ordinals": [],
+//       "runes": [],
+//       "address": "bcrt1qe36qxhv39xc573x2zndgzm4ladfr20mrx6j99rv646q3zrygz6gswkg9x3",
+//       "spent": false,
+//       "output": "b372db861597086ebe2c8555d4299e71d21e3fc867fb4cb34b84ff341a05d50b:0"
+//     }
   // ];
 
   psbt.addInput({
-    hash: "0060ffe6fae2834336d6d023944d82b1c5a7686ab62907e1447255f181514668",
+    hash: "b372db861597086ebe2c8555d4299e71d21e3fc867fb4cb34b84ff341a05d50b",
     index: 0, // UTXO output index vout
     witnessUtxo: {
       script: escrowP2WSH.output!,
-      value: 5000,
+      value: 2000000,
     },
     witnessScript: lockScript,
   });
 
 const fee = 1000;
 const sendAmount = 1000;
-const utxoAmount = 5000;
+const utxoAmount = 2000000;
 
 
 // Add output
@@ -150,7 +150,7 @@ const txHex = psbt.extractTransaction().toHex();
 console.log(`Transaction Hex: ${txHex}`);
  
 // broadcast
-const url = 'https://blockstream.info/testnet/api/tx';  // Blockstream’s Testnet API
+const url = 'http://mempool.regtest.exactsat.io/api/tx';  // Blockstream’s Testnet API
 axios
   .post(url, txHex)
   .then((response) => {
