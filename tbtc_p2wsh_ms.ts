@@ -82,8 +82,9 @@ const lockScript = bitcoin.script.compile([
     Buffer.from(eosAccount, "utf8"),
     bitcoin.opcodes.OP_DROP,
     // bitcoin.opcodes.OP_DUP, bitcoin.opcodes.OP_HASH160, bitcoin.crypto.hash160(alice1.publicKey), bitcoin.opcodes.OP_EQUAL,
-    bitcoin.opcodes.OP_TRUE,
+    bitcoin.opcodes.OP_DUP,
     bitcoin.opcodes.OP_IF,
+    bitcoin.opcodes.OP_DROP,
     bitcoin.opcodes.OP_2, alice1.publicKey, alice2.publicKey, alice3.publicKey, bitcoin.opcodes.OP_3,
     bitcoin.opcodes.OP_CHECKMULTISIG,
     bitcoin.opcodes.OP_ELSE,
@@ -117,7 +118,7 @@ const psbt = new bitcoin.Psbt({network});
 //       "output": "da95fe607cff0d4eba4d02b433a6232124831ab57f78d9480ad41bee4ad9a5ff:0"
 //     }
 psbt.addInput({
-    hash: "f7b4ea7c4eb3ecff7d9367f3025c83e38a75da020772e04115094f006a6df18e",
+    hash: "0cf6614b59ab79a33fee002d9b8a2b85c800dcc23cd6b017e9ca055b50f8a496",
     index: 0, // UTXO output index vout
     witnessUtxo: {
         script: escrowP2WSH.output!,
@@ -176,6 +177,7 @@ const finalizeInput = (_inputIndex: number, input: any) => {
             input: bitcoin.script.compile([
                 Buffer.from(""),
                 ...signatures,
+                bitcoin.opcodes.OP_TRUE,
                 // alice1.publicKey,
             ]),
             output: input.witnessScript,
