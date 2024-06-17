@@ -81,6 +81,8 @@ for (let pubkey of pubkeys) {
 const lockScript = bitcoin.script.compile([
     Buffer.from(eosAccount, "utf8"),
     bitcoin.opcodes.OP_DROP,
+    // bitcoin.opcodes.OP_DUP, bitcoin.opcodes.OP_HASH160, bitcoin.crypto.hash160(alice1.publicKey), bitcoin.opcodes.OP_EQUAL,
+    bitcoin.opcodes.OP_TRUE,
     bitcoin.opcodes.OP_IF,
     bitcoin.opcodes.OP_2, alice1.publicKey, alice2.publicKey, alice3.publicKey, bitcoin.opcodes.OP_3,
     bitcoin.opcodes.OP_CHECKMULTISIG,
@@ -103,7 +105,7 @@ const psbt = new bitcoin.Psbt({network});
 
 //  http://regtest.exactsat.io/api/v2/utxo/all?address=bcrt1qrq248nu6gscrwaw8ttczpmnakypzeg5ztyhkdtvj8wcdls4uczlq09pcrd
 // {
-//       "txid": "da95fe607cff0d4eba4d02b433a6232124831ab57f78d9480ad41bee4ad9a5ff",
+//       "txid": "0899e87194fc46e8940c9dd33f46fc895e9d7d33d94523fbadd732eae9aee2dc",
 //       "vout": 0,
 //       "height": 0,
 //       "value": 2000000,
@@ -115,7 +117,7 @@ const psbt = new bitcoin.Psbt({network});
 //       "output": "da95fe607cff0d4eba4d02b433a6232124831ab57f78d9480ad41bee4ad9a5ff:0"
 //     }
 psbt.addInput({
-    hash: "ab94880d6107e7a9025891f34c295d944ad2a0f53fc128764c22b6a3c597285e",
+    hash: "f7b4ea7c4eb3ecff7d9367f3025c83e38a75da020772e04115094f006a6df18e",
     index: 0, // UTXO output index vout
     witnessUtxo: {
         script: escrowP2WSH.output!,
@@ -168,15 +170,25 @@ const finalizeInput = (_inputIndex: number, input: any) => {
     for (let signature of signatures) {
         console.log(`signature=${signature.toString('hex')}`)
     }
-    // Create the witness stack
-    const witnessStack = [
-        Buffer.alloc(0), // Dummy value for CHECKMULTISIG
-        ...signatures,
-        input.witnessScript
-    ];
+
+    const redeemPayment = bitcoin.payments.p2wsh({
+        redeem: {
+            input: bitcoin.script.compile([
+                Buffer.from(""),
+                ...signatures,
+                // alice1.publicKey,
+            ]),
+            output: input.witnessScript,
+        },
+    });
+
+    const finalScriptWitness = witnessStackToScriptWitness(
+        redeemPayment.witness ?? []
+    );
+
+    console.log(`finalScriptWitness=${finalScriptWitness}`)
 
     // Create the finalScriptWitness
-    const finalScriptWitness = witnessStackToScriptWitness(witnessStack);
 
     return {
         finalScriptSig: Buffer.from(""), // For P2WSH, this should be an empty buffer
@@ -185,7 +197,7 @@ const finalizeInput = (_inputIndex: number, input: any) => {
 };
 
 
-if (psbt.validateSignaturesOfInput(0, validateSigFunction, alice1.publicKey) && psbt.validateSignaturesOfInput(0, validateSigFunction, alice2.publicKey) ) {
+if (psbt.validateSignaturesOfInput(0, validateSigFunction, alice1.publicKey) && psbt.validateSignaturesOfInput(0, validateSigFunction, alice2.publicKey)) {
     psbt.finalizeInput(0, finalizeInput);
     const txHex = psbt.extractTransaction().toHex();
     console.log(`Transaction Hex: ${txHex}`);
