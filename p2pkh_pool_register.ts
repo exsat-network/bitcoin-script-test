@@ -34,79 +34,40 @@ const psbt = new bitcoin.Psbt({network});
 // http://regtest.exactsat.io/api/v2/utxo/all?address=my3NwUoAcJZP29JQQpaWh7KtRxZQDhQrEw
 //http://mempool.regtest.exactsat.io/api/tx/5ee6e01670f757560181d2ad5b5c450989f86d42364e2c83104a70645464dddb/hex
 psbt.addInput({
-  hash: "57ff897afd38574af8aa521128508732322c67ac323b5a416b8da864efef15b8",
+  hash: "565d738923453bc16cd05b0c5f951f4834f4d792fa8ed256aeb300ea39ceff8c",
   index: 0,
   nonWitnessUtxo: Buffer.from(
-    "0200000001713b2dd61ae3e61fa5161d5995d6f98061dc1124390b1f231d08c7748493d76f000000006b483045022100dfe607674239595dc0e28787190e39eefa65887a59aa8c85210896b5e1e7480702202a59beff63a941729e89a5c6063e75e3d2974c19bed988f0938885275357e74f012103d8dd98e6425bd393e7c94b905a2b3d4b69009a1f00c34300220a5c4053fd0617ffffffff0240e81d00000000001976a914c03b30a51040e4116aad376a25bf3ce9b8e2039d88ac0000000000000000106a0e455853415401920cd247e4bc813000000000",
+    "0200000001e3ef6e8f26e8e6fbdd310f522a686dd8ca4f6a64e2f6265e4550b3f877d9dd98000000006b483045022100ee8e394e46a1ad7ed98503630b9389ba9767e97d8af90e6f72ceef8363ca12710220079134cf659b258d4b256e340697a563c7ca8e5a90e61dc2565a736787517e71012103d8dd98e6425bd393e7c94b905a2b3d4b69009a1f00c34300220a5c4053fd0617ffffffff02209a1d00000000001976a914c03b30a51040e4116aad376a25bf3ce9b8e2039d88ac0000000000000000106a0e4558534154010920cd247e4bc81300000000",
     "hex"
   ),
 });
 
-const sendAmount = 1950000;
+const sendAmount = 1930000;
 
 
 // customEncode
-function customEncode(inputString: string): string {
-  const encodingMap: { [key: string]: string } = {
-    a: "00000",
-    b: "00001",
-    c: "00010",
-    d: "00011",
-    e: "00100",
-    f: "00101",
-    g: "00110",
-    h: "00111",
-    i: "01000",
-    j: "01001",
-    k: "01010",
-    l: "01011",
-    m: "01100",
-    n: "01101",
-    o: "01110",
-    p: "01111",
-    q: "10000",
-    r: "10001",
-    s: "10010",
-    t: "10011",
-    u: "10100",
-    v: "10101",
-    w: "10110",
-    x: "10111",
-    y: "11000",
-    z: "11001",
-    "1": "11010",
-    "2": "11011",
-    "3": "11100",
-    "4": "11101",
-    "5": "11110",
-    ".": "11111",
-  };
+function customEncode(inputString: string): Buffer {
+    const encodingMap = [
+        'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p',
+        'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '1', '2', '3', '4', '5', '.'
+    ];
 
-  return inputString
-    .split("")
-    .map((char) => encodingMap[char])
-    .join("");
+    let buffer = Buffer.alloc(inputString.length)
+    for (let i = 0; i < inputString.length; i++) {
+        const charIndex = encodingMap.indexOf(inputString[i]);
+        if (charIndex === -1) {
+            throw new Error(`Character ${inputString[i]} is not in the encoding map.`);
+        }
+        console.log(`charIndex=${charIndex}`)
+        buffer.writeInt8(charIndex, i)
+    }
+    return buffer;
 }
-
-function binaryStringToBuffer(binaryString: string): Buffer {
-  const byteArray = [];
-  for (let i = 0; i < binaryString.length; i += 5) {
-    const byte = binaryString.substring(i, i + 5);
-    byteArray.push(parseInt(byte, 2));
-  }
-  return Buffer.from(byteArray);
-}
-
-// Add output
-psbt.addOutput({
-    address: aliceAddress, // Payee Address
-    value: sendAmount, // The amount sent, in satoshi
-});
 
 const version = 1
 const signAccount = 'signer.exsat'
 
-const signAccountBuffer = binaryStringToBuffer(customEncode(signAccount));
+const signAccountBuffer = customEncode(signAccount);
 const data = Buffer.concat([
   Buffer.from("EXSAT", "utf8"), // fixed string 'EXSAT'
   Buffer.from([version]), // version
@@ -116,6 +77,13 @@ const script = bitcoin.script.compile([
     bitcoin.opcodes.OP_RETURN,
     data
 ]);
+
+// Add output
+psbt.addOutput({
+    address: aliceAddress, // Payee Address
+    value: sendAmount, // The amount sent, in satoshi
+});
+
 psbt.addOutput({
     script: script,
     value: 0
