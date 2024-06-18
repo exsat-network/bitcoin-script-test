@@ -81,7 +81,6 @@ for (let pubkey of pubkeys) {
 const lockScript = bitcoin.script.compile([
     Buffer.from(eosAccount, "utf8"),
     bitcoin.opcodes.OP_DROP,
-    // bitcoin.opcodes.OP_DUP, bitcoin.opcodes.OP_HASH160, bitcoin.crypto.hash160(alice1.publicKey), bitcoin.opcodes.OP_EQUAL,
     bitcoin.opcodes.OP_DUP,
     bitcoin.opcodes.OP_IF,
     bitcoin.opcodes.OP_DROP,
