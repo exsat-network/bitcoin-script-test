@@ -34,15 +34,15 @@ const psbt = new bitcoin.Psbt({network});
 // http://regtest.exactsat.io/api/v2/utxo/all?address=my3NwUoAcJZP29JQQpaWh7KtRxZQDhQrEw
 //http://mempool.regtest.exactsat.io/api/tx/5ee6e01670f757560181d2ad5b5c450989f86d42364e2c83104a70645464dddb/hex
 psbt.addInput({
-  hash: "9dcb04da6f564d9e92b51d83607ebd32f338668c90e347cf391002b0265603a6",
+  hash: "57ff897afd38574af8aa521128508732322c67ac323b5a416b8da864efef15b8",
   index: 0,
   nonWitnessUtxo: Buffer.from(
-    "0200000000010167fd723ed321ef948791938cb71b9a8d19ac24b0db2275280cc059a112c821240100000000ffffffff0200e1f50500000000160014442ba3c05258e06a8790399757727b1b788068b5e601164e02000000160014e990b20af86e665121e1aa38461edeba32db91bc02483045022100b633f0a52926c516181eb92aef965d98ca691118ecc12b028a00e8bd97521fa502206ae928136917118a14793337375528efb0b6537c3a44f9e8767d9b84369a51a50121038d9f1319b86a99a5c6298a382c7de937fbbeb12cdca7c1549fe3fa455565309600000000",
+    "0200000001713b2dd61ae3e61fa5161d5995d6f98061dc1124390b1f231d08c7748493d76f000000006b483045022100dfe607674239595dc0e28787190e39eefa65887a59aa8c85210896b5e1e7480702202a59beff63a941729e89a5c6063e75e3d2974c19bed988f0938885275357e74f012103d8dd98e6425bd393e7c94b905a2b3d4b69009a1f00c34300220a5c4053fd0617ffffffff0240e81d00000000001976a914c03b30a51040e4116aad376a25bf3ce9b8e2039d88ac0000000000000000106a0e455853415401920cd247e4bc813000000000",
     "hex"
   ),
 });
 
-const sendAmount = 1990000;
+const sendAmount = 1950000;
 
 
 // customEncode
@@ -109,7 +109,7 @@ const signAccount = 'signer.exsat'
 const signAccountBuffer = binaryStringToBuffer(customEncode(signAccount));
 const data = Buffer.concat([
   Buffer.from("EXSAT", "utf8"), // fixed string 'EXSAT'
-  Buffer.from(` ${version} `, "utf8"), // version
+  Buffer.from([version]), // version
   signAccountBuffer, // signer account
 ]);
 const script = bitcoin.script.compile([
