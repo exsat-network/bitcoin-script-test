@@ -30,6 +30,8 @@ const alice3 = ECPair.fromWIF(alice3PriKey, network);
 
 //  mkmYsvm3tU1meB8nR2z7Hwd3FyEAR2FTNU(P2PKH)
 const bob = ECPair.fromWIF(bobPriKey, network);
+console.log(`privkey1=${alice1.privateKey?.toString('hex')}`)
+console.log(`privkey2=${alice2.privateKey?.toString('hex')}`)
 
 const bobAddress =
     bitcoin.payments.p2wpkh({
@@ -117,7 +119,7 @@ const psbt = new bitcoin.Psbt({network});
 //       "output": "da95fe607cff0d4eba4d02b433a6232124831ab57f78d9480ad41bee4ad9a5ff:0"
 //     }
 psbt.addInput({
-    hash: "0cf6614b59ab79a33fee002d9b8a2b85c800dcc23cd6b017e9ca055b50f8a496",
+    hash: "da95fe607cff0d4eba4d02b433a6232124831ab57f78d9480ad41bee4ad9a5ff",
     index: 0, // UTXO output index vout
     witnessUtxo: {
         script: escrowP2WSH.output!,
@@ -151,24 +153,32 @@ psbt.addOutput({
     value: changeAmount,
 });
 
+const psbtBase64 = psbt.toBase64();
+console.log(`PSBT Base64: ${psbtBase64}`);
 
 // Sign transaction
-psbt.signInput(0, alice1);
-psbt.signInput(0, alice2);
+// psbt.signInput(0, alice1);
+// psbt.signInput(0, alice2);
 
 const validateSigFunction = (pubkey: Buffer, msghash: Buffer, signature: Buffer) => {
+    console.log(`pubkey=${pubkey.toString('hex')}`)
+    console.log(`msghash=${msghash.toString('hex')}`)
+    console.log(`signature=${signature.toString('hex')}`)
     const verified = ecc.verify(msghash, pubkey, signature);
     return verified
 };
 
 
 const finalizeInput = (_inputIndex: number, input: any) => {
-    const signatures = input.partialSig.map((sig: { signature: any; }) => sig.signature);
-    const pubkeys = input.partialSig.map((sig: { pubkey: any; }) => sig.pubkey);
+    // const signatures = input.partialSig.map((sig: { signature: any; }) => sig.signature);
+    // const pubkeys = input.partialSig.map((sig: { pubkey: any; }) => sig.pubkey);
+    const signatures =[Buffer.from('3044022006deff3eb19b3bdd5483b10d25bcf82d16f4fe2b5945f02955500b02e94ac4fa02201ea1b8660f8a13299d497a4d3fff23accecf11591a45e9102a9c6c2c342a3dc401'),
+        Buffer.from('3045022100a7bba5fd013c80d73be69e6d1f4479067fc564b658a151b8e48bee239b1e8def022062b0274016bcaf3a59b02d0f395662828d0523f8f7b787c1ecaa300105f690cd01'),
+    ];
 
 
     for (let signature of signatures) {
-        console.log(`signature=${signature.toString('hex')}`)
+        console.log(`signature: ${signature.toString('hex')}`)
     }
 
     const redeemPayment = bitcoin.payments.p2wsh({
@@ -187,24 +197,22 @@ const finalizeInput = (_inputIndex: number, input: any) => {
         redeemPayment.witness ?? []
     );
 
-    console.log(`finalScriptWitness=${finalScriptWitness}`)
-
-    // Create the finalScriptWitness
 
     return {
         finalScriptSig: Buffer.from(""), // For P2WSH, this should be an empty buffer
         finalScriptWitness,
     };
 };
+psbt.finalizeInput(0, finalizeInput);
 
 
-if (psbt.validateSignaturesOfInput(0, validateSigFunction, alice1.publicKey) && psbt.validateSignaturesOfInput(0, validateSigFunction, alice2.publicKey)) {
-    psbt.finalizeInput(0, finalizeInput);
-    const txHex = psbt.extractTransaction().toHex();
-    console.log(`Transaction Hex: ${txHex}`);
-} else {
-    console.error("签名验证失败！");
-}
+// if (psbt.validateSignaturesOfInput(0, validateSigFunction, alice1.publicKey) && psbt.validateSignaturesOfInput(0, validateSigFunction, alice2.publicKey)) {
+//     psbt.finalizeInput(0, finalizeInput);
+//     const txHex = psbt.extractTransaction().toHex();
+//     console.log(`Transaction Hex: ${txHex}`);
+// } else {
+//     console.error("签名验证失败！");
+// }
 
 
 // Extract the hex format of the transaction
