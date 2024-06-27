@@ -157,8 +157,8 @@ const psbtBase64 = psbt.toBase64();
 console.log(`PSBT Base64: ${psbtBase64}`);
 
 // Sign transaction
-// psbt.signInput(0, alice1);
-// psbt.signInput(0, alice2);
+psbt.signInput(0, alice1);
+psbt.signInput(0, alice2);
 
 const validateSigFunction = (pubkey: Buffer, msghash: Buffer, signature: Buffer) => {
     console.log(`pubkey=${pubkey.toString('hex')}`)
@@ -170,11 +170,11 @@ const validateSigFunction = (pubkey: Buffer, msghash: Buffer, signature: Buffer)
 
 
 const finalizeInput = (_inputIndex: number, input: any) => {
-    // const signatures = input.partialSig.map((sig: { signature: any; }) => sig.signature);
+    const signatures = input.partialSig.map((sig: { signature: any; }) => sig.signature);
     // const pubkeys = input.partialSig.map((sig: { pubkey: any; }) => sig.pubkey);
-    const signatures =[Buffer.from('3044022006deff3eb19b3bdd5483b10d25bcf82d16f4fe2b5945f02955500b02e94ac4fa02201ea1b8660f8a13299d497a4d3fff23accecf11591a45e9102a9c6c2c342a3dc401'),
-        Buffer.from('3045022100a7bba5fd013c80d73be69e6d1f4479067fc564b658a151b8e48bee239b1e8def022062b0274016bcaf3a59b02d0f395662828d0523f8f7b787c1ecaa300105f690cd01'),
-    ];
+    // const signatures =[Buffer.from('3044022006deff3eb19b3bdd5483b10d25bcf82d16f4fe2b5945f02955500b02e94ac4fa02201ea1b8660f8a13299d497a4d3fff23accecf11591a45e9102a9c6c2c342a3dc401'),
+    //     Buffer.from('3045022100a7bba5fd013c80d73be69e6d1f4479067fc564b658a151b8e48bee239b1e8def022062b0274016bcaf3a59b02d0f395662828d0523f8f7b787c1ecaa300105f690cd01'),
+    // ];
 
 
     for (let signature of signatures) {

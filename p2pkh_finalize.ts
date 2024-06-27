@@ -1,31 +1,20 @@
-import ECPairFactory from 'ecpair';
-import * as ecc from 'tiny-secp256k1';
 import * as bitcoin from "bitcoinjs-lib";
 import axios from "axios";
 import "dotenv/config.js";
-import bscript, {isCanonicalScriptSignature} from "bitcoinjs-lib/src/script";
 
-// load environment variables
-const alicePriKey = process.env.ALICE1_PRIVATE_KEY || "";
-
-
-// keypairs generation
-const ECPair = ECPairFactory(ecc);
 const network = bitcoin.networks.regtest;
-
-const alice = ECPair.fromWIF(alicePriKey, network);
-
+const pubkey = Buffer.from('037bbc829d6fe8f9a28fe25ecfb832266bd27d3bdf8976371cbd3fd60a5edafbc5','hex')
 // Show the conversion process from pubkey to address
 const aliceAddress =
     bitcoin.payments.p2pkh({
-        hash: bitcoin.crypto.hash160(alice.publicKey),
+        hash: bitcoin.crypto.hash160(pubkey),
         network,
-    }).address || "my3NwUoAcJZP29JQQpaWh7KtRxZQDhQrEw";
+    }).address || "mzpgLi7inwoZjRjmiUX2CUYcQTtztTMF94";
 
 
 console.log(
     `alice: ${aliceAddress} matches: ${
-        aliceAddress === "my3NwUoAcJZP29JQQpaWh7KtRxZQDhQrEw"
+        aliceAddress === "mzpgLi7inwoZjRjmiUX2CUYcQTtztTMF94"
     }`
 );
 
@@ -35,15 +24,15 @@ const psbt = new bitcoin.Psbt({network});
 // http://regtest.exactsat.io/api/v2/utxo/all?address=my3NwUoAcJZP29JQQpaWh7KtRxZQDhQrEw
 //http://mempool.regtest.exactsat.io/api/tx/565d738923453bc16cd05b0c5f951f4834f4d792fa8ed256aeb300ea39ceff8c/hex
 psbt.addInput({
-  hash: "f749e7bfb767ceb59032face95d069afdf1dd2a12a93a315c64b44ef27a66714",
+  hash: "7da550c63c83aead00ce93fcd012a43d78a3b1c66b8f0e235697335063484587",
   index: 0,
   nonWitnessUtxo: Buffer.from(
-    "02000000018cffce39ea00b3ae56d28efa92d7f434481f955f0c5bd06cc13b452389735d56000000006a473044022015994d7e308afddd93b7e67c376777a3628be74d4ff40ece433f48b58ff5b32202202c9083cf104cd1c2acb0ae796bcabb21a5dfcdee5056cbc985958ad5822129e2012103d8dd98e6425bd393e7c94b905a2b3d4b69009a1f00c34300220a5c4053fd0617ffffffff0210731d00000000001976a914c03b30a51040e4116aad376a25bf3ce9b8e2039d88ac0000000000000000146a124558534154011208060d04111f041712001300000000",
+    "02000000000101a65f21aee0efdf9145e2175efbe3140bf9db4cb136973d51f09f8d2c8dae0d110100000000ffffffff0210270000000000001976a914d3c48f2e2c2bc73d61e1e476cc9a66c5569fe1ad88ac10e4b60000000000160014c03b30a51040e4116aad376a25bf3ce9b8e2039d02483045022100b7b46eaefcd08cab923b0b468a4544499c8953e411df33e02fa86202bf2b26d10220559eeab42c560362d98eab6e535e0faf8b2ec852409229a989dfb9aa7dc4025b012103d8dd98e6425bd393e7c94b905a2b3d4b69009a1f00c34300220a5c4053fd061700000000",
     "hex"
   ),
 });
 
-const sendAmount = 1920000;
+const sendAmount =9000;
 
 
 // customEncode
@@ -96,8 +85,8 @@ console.log(psbtBase64)
 const finalizeInput = (_inputIndex: number, input: any) => {
     const payment = bitcoin.payments.p2pkh({
         output: input.script,
-        pubkey: alice.publicKey,
-        signature: Buffer.from('3045022100e8468fb7e0b30fa3c534d935f437a7e8b5eff15bef1701e3ec7010f030c9e96802206f11a6961cd11ac1e33d72b1c964011eddb95825b3e7b2d5de4d1d17cb890d4201','hex'),
+        pubkey: pubkey,
+        signature: Buffer.from('304402200d4c8c6dac322d41cb9a6fb9591eb3bbbb32cd365de9a18a3208271e1514ca80022007d117b5540851c11cae0840ca899b3060fa9c40eb07036cf09b6b8546197a7801','hex'),
     });
     const finalScriptSig= payment.input
     return {
