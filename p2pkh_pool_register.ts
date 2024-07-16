@@ -19,12 +19,12 @@ const aliceAddress =
     bitcoin.payments.p2pkh({
         hash: bitcoin.crypto.hash160(alice.publicKey),
         network,
-    }).address || "mt7GVM7AAhPFsovEyfyhEy97oFiynDoZbr";
+    }).address || "my3NwUoAcJZP29JQQpaWh7KtRxZQDhQrEw";
 
 
 console.log(
     `alice: ${aliceAddress} matches: ${
-        aliceAddress === "mt7GVM7AAhPFsovEyfyhEy97oFiynDoZbr"
+        aliceAddress === "my3NwUoAcJZP29JQQpaWh7KtRxZQDhQrEw"
     }`
 );
 
@@ -65,7 +65,7 @@ function customEncode(inputString: string): Buffer {
 }
 
 const version = 1
-const signAccount = 'signer.exsat'
+const signAccount = 'return.xsat'
 
 const signAccountBuffer = customEncode(signAccount);
 const data = Buffer.concat([
@@ -73,6 +73,8 @@ const data = Buffer.concat([
   Buffer.from([version]), // version
   signAccountBuffer, // signer account
 ]);
+
+//
 const script = bitcoin.script.compile([
     bitcoin.opcodes.OP_RETURN,
     data
@@ -88,6 +90,8 @@ psbt.addOutput({
     script: script,
     value: 0
 });
+
+console.log(script.toString('hex'))
 
 // Sign transaction
 psbt.signInput(0, alice);
